@@ -5,6 +5,12 @@
               projectLineFeed="&#10;">
   <MAINGROUP id="bsNvrF" name="Vocal Compressor">
     <GROUP id="{612F8E45-938F-99BA-E2B2-54551B90E2A2}" name="Source">
+      <FILE id="Lrcnmy" name="EnvelopeDetector.cpp" compile="1" resource="0"
+            file="Source/EnvelopeDetector.cpp"/>
+      <FILE id="BOdLAd" name="EnvelopeDetector.h" compile="0" resource="0"
+            file="Source/EnvelopeDetector.h"/>
+      <FILE id="JuCqeN" name="Compressor.cpp" compile="1" resource="0" file="Source/Compressor.cpp"/>
+      <FILE id="iu1dsL" name="Compressor.h" compile="0" resource="0" file="Source/Compressor.h"/>
       <FILE id="pog1a8" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="pCm7LZ" name="PluginProcessor.h" compile="0" resource="0"

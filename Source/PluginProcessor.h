@@ -9,6 +9,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "Compressor.h"
+#include "EnvelopeDetector.h"
 
 //==============================================================================
 /**
@@ -62,11 +64,8 @@ public:
 
 private:
     
-    float getGainReduction (float env);
-    float processSample (int channel, float sample);
-    
-    juce::dsp::BallisticsFilter<float> envelopeFilter;
-    juce::dsp::Gain<float> gain;
+    Compressor compressor;
+    EnvelopeDetector envelopeDetector;
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalCompressorAudioProcessor)

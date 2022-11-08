@@ -107,17 +107,12 @@ void VocalCompressorAudioProcessor::prepareToPlay (double sampleRate, int sample
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+    envelopeDetector.prepare(sampleRate);
+    envelopeDetector.reset();
     
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
-    
-    envelopeFilter.prepare(spec);
-    envelopeFilter.reset();
-    
-    gain.prepare(spec);
-    gain.reset();
+    compressor.prepare(sampleRate);
+    compressor.reset();
 }
 
 void VocalCompressorAudioProcessor::releaseResources()
@@ -152,65 +147,34 @@ bool VocalCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
 }
 #endif
 
-float VocalCompressorAudioProcessor::getGainReduction(float envelope)
-{
-    float lowerKneeBound = *threshold - (*knee / 2.0f);
-    float upperKneeBound = *threshold + (*knee / 2.0f);
-    
-    float gainReduction = 1.0f - (1.0f / *ratio);
-
-    if (envelope < lowerKneeBound)
-    {
-        return 0.0;
-    }
-    else if (envelope < upperKneeBound)
-    {
-        gainReduction *= ((envelope - lowerKneeBound) / *knee) / 2.0f;
-        return gainReduction * (lowerKneeBound - envelope);
-    }
-    else
-    {
-        return gainReduction * (*threshold - envelope);
-    }
-}
-
-float VocalCompressorAudioProcessor::processSample (int channel, float sample)
-{
-    float envelope = juce::Decibels::gainToDecibels(envelopeFilter.processSample(channel, sample));
-    float gain = getGainReduction(envelope);
-    return sample * juce::Decibels::decibelsToGain(gain);
-}
-
 void VocalCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
+    
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
-    juce::dsp::AudioBlock<float> block (buffer);
-    auto context = juce::dsp::ProcessContextReplacing<float> (block);
-
-    envelopeFilter.setAttackTime(*attack);
-    envelopeFilter.setReleaseTime(*release);
     
-    for (int channel = 0; channel < block.getNumChannels(); channel++)
+    envelopeDetector.setAttackTime(*attack / 1000);
+    envelopeDetector.setReleaseTime(*release / 1000);
+    compressor.setThreshold(*threshold);
+    compressor.setRatio(*ratio);
+    compressor.setKnee(*knee);
+    
+    float sample;
+    float envelope;
+    float gainReduction;
+    for (auto channel = 0; channel < buffer.getNumChannels(); channel++)
     {
-        float* samples  = block.getChannelPointer(channel);
-        for (int i = 0; i < block.getNumSamples(); ++i)
-            samples[i] = processSample(channel, samples[i]);
+        for (auto i = 0; i < buffer.getNumSamples(); i++)
+        {
+            sample = buffer.getSample(channel, i);
+            envelope = envelopeDetector.getEnvelope(sample);
+            gainReduction = compressor.getGainReduction(juce::Decibels::gainToDecibels(envelope));
+            buffer.setSample(channel, i, sample * juce::Decibels::decibelsToGain(-gainReduction));
+        }
     }
-    
-    gain.setGainDecibels(-getGainReduction(-0.0f) * *autoGain);
-    gain.process(context);
-    
 }
 
 //==============================================================================
