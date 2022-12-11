@@ -22,18 +22,12 @@ VocalCompressorAudioProcessor::VocalCompressorAudioProcessor()
                        )
 #endif
 {
-    addParameter (threshold = new juce::AudioParameterFloat (
-        "threshold", "Threshold", -60.0f, 0.0f, -18.0f));
-    addParameter (ratio = new juce::AudioParameterFloat (
-        "ratio", "Ratio", 1.0f, 20.0f, 4.0f));
-    addParameter (attack = new juce::AudioParameterFloat (
-        "attack", "Attack", 0.0f, 50.0f, 5.0f));
-    addParameter (release = new juce::AudioParameterFloat (
-        "release", "Release", 0.0f, 1000.0f, 250.0f));
-    addParameter (knee = new juce::AudioParameterFloat (
-        "knee", "Knee", 0.0f, 96.0f, 18.0f));
-    addParameter (autoGain = new juce::AudioParameterFloat (
-        "autoGain", "Auto Gain", 0.0f, 1.0f, 0.5f));
+    addParameter (threshold = new juce::AudioParameterFloat ({"threshold", 1}, "Threshold", -60.0f, 0.0f, -18.0f));
+    addParameter (ratio = new juce::AudioParameterFloat ({"ratio", 1}, "Ratio", 1.0f, 20.0f, 4.0f));
+    addParameter (attack = new juce::AudioParameterFloat ({"attack", 1}, "Attack", 0.0f, 50.0f, 5.0f));
+    addParameter (release = new juce::AudioParameterFloat ({"release", 1}, "Release", 0.0f, 1000.0f, 250.0f));
+    addParameter (knee = new juce::AudioParameterFloat ({"knee", 1}, "Knee", 0.0f, 96.0f, 18.0f));
+    addParameter (autoGain = new juce::AudioParameterFloat ({"autoGain", 1}, "Auto Gain", 0.0f, 1.0f, 0.5f));
 }
 
 VocalCompressorAudioProcessor::~VocalCompressorAudioProcessor()
